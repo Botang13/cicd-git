@@ -1,0 +1,45 @@
+# Nama alur kerja
+name: Docker CI
+
+# Trigger: alur kerja ini akan berjalan saat ada push ke branch `main`
+on:
+  push:
+    branches:
+      - main
+
+# Job yang akan dijalankan
+jobs:
+  build-and-push:
+    # Jalankan job pada runner Ubuntu terbaru
+    runs-on: ubuntu-latest
+
+    # Langkah-langkah dalam job
+    steps:
+      # Langkah 1: Checkout kode dari repositori
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Langkah 2: Login ke Docker Hub
+      - name: Log in to Docker Hub
+        # Gunakan GitHub Action resmi untuk login Docker
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      # Langkah 3: Ekstrak tag untuk image Docker
+      - name: Extract Docker tag
+        id: meta
+        # Gunakan GitHub Action resmi untuk metadata Docker
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ secrets.DOCKER_USERNAME }}/simple-app # Ganti 'simple-app' dengan nama image yang Anda inginkan
+
+      # Langkah 4: Bangun dan dorong (build and push) image Docker
+      - name: Build and Push Docker image
+        # Gunakan GitHub Action resmi untuk build dan push Docker
+        uses: docker/build-push-action@v5
+        with:
+          context: . # Konteks build adalah direktori root
+          push: true # Lakukan push ke Docker Hub
+          tags: ${{ steps.meta.outputs.tags }}
